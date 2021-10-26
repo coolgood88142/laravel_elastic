@@ -6,12 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\LazyCollection;
-use App\Events\AddArticles;
-use App\Events\DeleteArticles;
-use App\Events\RedisMessage;
 use App\Models\Articles;
 use App\Models\Channels;
 use App\Models\Notifications;
+use App\Services\ElasticService;
 use App\User;
 use App\Models\Author;
 use App\Models\Comment;
@@ -48,18 +46,18 @@ class ArticlesController extends Controller
 
 
     //新增一篇文章
-    public function addArticles(Request $request)
+    public function addArticles()
     {
         $articles = new Articles();
-        $articles->title = $request->InputTitle;
-        $articles->content = $request->InputContent;
-        $articles->author = $request->author;
-        $articles->create_date = $request->createDate;
+        $articles->title = '第一篇文章';
+        $articles->author = '王小明';
+        $articles->create_date = '2021-10-27';
+        $articles->content = '測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試';
         $articles->save();
 
-        $this->elasticService->addInfo($articles->title, $articles->content, $articles->author, $articles->create_date);
+        $this->elasticService->addElastic($articles->title, $articles->author, $articles->create_date, $articles->content);
 
-        return redirect()->route('showAritcles');
+        return view('add');
     }
 
     //已閱讀通知 or 已閱讀全部

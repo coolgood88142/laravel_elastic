@@ -32,7 +32,7 @@ class ElasticService
         $response = $client->delete($data);
     }
 
-    public function addElastic($context, $auther)
+    public function addElastic($title, $auther, $createDate, $context)
     {
         $params =[
             'index' => date('YmdHms'),
@@ -41,8 +41,10 @@ class ElasticService
         ];
     
         $params['body'] = [
-        	'context' => $context,
-        	'auther' => $auther
+            'title' => $title,
+            'auther' => $auther,
+            'createDate' => $createDate,
+        	'context' => $context
         ];
     
         $client = $this->connElastic();
