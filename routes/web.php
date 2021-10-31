@@ -21,4 +21,6 @@ Route::get('/add', function () {
 
 Route::post('/addArticles', 'ArticlesController@addArticles');
 
+Route::get('/testSearch', 'ArticlesController@searchArticles');
+
 Route::get('/testAdd', 'ArticlesController@addArticles');

@@ -44,20 +44,42 @@ class ArticlesController extends Controller
         return view('articles', $data);
     } 
 
+    public function searchArticles()
+    {
+        $search = '不被情緒綁架的日常';
+        $response = $this->elasticService->fuzzinSearch($search);
+        dd($response);
+    }
+
 
     //新增一篇文章
     public function addArticles()
     {
         $articles = new Articles();
-        $articles->title = '第一篇文章';
-        $articles->author = '王小明';
-        $articles->create_date = '2021-10-27';
-        $articles->content = '測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試測試';
+        $articles->title = '不被情緒綁架的日常';
+        $articles->author = '劍聖喵大爺';
+        $articles->create_date = '2021-10-30';
+        $articles->content = '真正有自信的人只需要突出重點來講，答得太多往往很難給人留下深刻的印象。';
         $articles->save();
 
-        $this->elasticService->addElastic($articles->title, $articles->author, $articles->create_date, $articles->content);
+        $this->elasticService->addElastic($articles->id, $articles->title, $articles->author, $articles->create_date, $articles->content);
+        // $client = $this->elasticService->addElastic(2, 'Ming');
+		print_r('已建立成功!');
 
-        return view('add');
+        // return view('add');
+    }
+
+    public function updateArticles()
+    {
+        $params =[
+            'index' => 'elastic20211029191024',
+            'type' => 'data',
+            'body' => [
+                'title' => [
+
+                ]
+            ]
+        ];
     }
 
     //已閱讀通知 or 已閱讀全部
@@ -153,52 +175,11 @@ class ArticlesController extends Controller
     public function deleteArticles(Request $request)
     {
         $id = $request->id;
-        $isEven = $request->isEven;
-        $status = 'success';
-        try{
-            $articles = Articles::where('id', '=', $id)->first();
-            $title = '您有一篇新訊息【' . $articles->title . '已刪除】';
-            $articles->delete();
-            $even = $isEven ? '0' : '1';
 
-            $pusher = new Pusher(
-                '408cd422417d5833d90d',
-                '2cb040ab9efbb676ed8b',
-                '1243356', 
-                array(
-                    'cluster' => 'ap3',
-                    'encrypted' => true
-                )
-            );
 
-            // $user =  User::where('id % 2', '=', $even);
-            
-            set_time_limit(0);
-            \App\User::chunk(10000, function($users)
-            {   
-                $title = $this->title;
-                $id = $this->id;
-                event(new DeleteArticles($users, $title, $id));
-                
-                $data['message'] =  $title;
-                $data['userData'] =  [
-                    'id' => $id,
-                    'type' => 'deleteArticle'
-                ];
+        $articles = Articles::where('id', '=', $id)->first();
+        $articles->delete();
 
-                // $data['users'] = $users;
-
-                foreach($users as $user){
-                    $notification = $user->notifications()->first();
-                    $data['broadcast'] = $notification;
-                    $pusher->trigger('article-channel' . $user->id, 'App\\Events\\SendMessage', $data);
-                }
-
-                event(new RedisMessage($data));
-            });
-        }catch(Exception $e){
-            $status = 'error';
-        }
 
         return $status;
     }
