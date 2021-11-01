@@ -56,13 +56,14 @@ class ArticlesController extends Controller
     public function addArticles()
     {
         $articles = new Articles();
-        $articles->title = '不被情緒綁架的日常';
-        $articles->author = '劍聖喵大爺';
-        $articles->create_date = '2021-10-30';
-        $articles->content = '真正有自信的人只需要突出重點來講，答得太多往往很難給人留下深刻的印象。';
-        $articles->save();
+        $articles->title = '測試111';
+        $articles->author = '張三';
+        $articles->create_date = '2021-11-01';
+        $articles->content = '測試ElasticSearch測試ElasticSearch測試ElasticSearch測試ElasticSearch';
+        // $articles->save();
+        $id = 'el3';
 
-        $this->elasticService->addElastic($articles->id, $articles->title, $articles->author, $articles->create_date, $articles->content);
+        $this->elasticService->addElastic($id, $articles->title, $articles->author, $articles->create_date, $articles->content);
         // $client = $this->elasticService->addElastic(2, 'Ming');
 		print_r('已建立成功!');
 

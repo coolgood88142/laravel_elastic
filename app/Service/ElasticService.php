@@ -34,26 +34,30 @@ class ElasticService
 
     public function searchElastic($client, $data)
     {
-        $response = $client->search($data);
+        return $client->search($data);
     }
 
     public function addElastic($id, $title, $auther, $createDate, $context)
     {
-        $params =[
-            'index' => 'elastic' . date('YmdHms'),
-            'type' => 'data',
-            'id' => $id
-        ];
+        // $params =[
+        //     'index' => 'elastic' . date('YmdHms'),
+        //     'type' => 'data',
+        //     'id' => $id
+        // ];
     
-        $params['body'] = [
-            'title' => $title,
-            'auther' => $auther,
-            'createDate' => $createDate,
-        	'context' => $context
-        ];
+        // $params['body'] = [
+        //     'title' => $title,
+        //     'auther' => $auther,
+        //     'createDate' => $createDate,
+        // 	'context' => $context
+        // ];
 
+        $params = [
+            'index' => 'my_index1',
+            'id'    => 'my_id',
+            'body'  => ['testField' => 'abc']
+        ];
         
-    
         $client = $this->connElastic();
         $response = $this->createElastic($client, $params);
         dd($response);
@@ -61,44 +65,40 @@ class ElasticService
 
     public function fuzzinSearch($search)
     {
-        // $query = [
-        //     'multi_match' => [
-        //         'query' => $search,
-        //         'fuzziness' => 'AUTO',
-        //         'fields' => ['title', 'auther', 'content'],
-        //     ],
-        // ];
-
-        // $query = [
-        //     'fuzzy'=>[
-        //         "title.keyword" => [
-        //             "value" => $search
-        //         ],
-        //     ],
-        // ];
-
-        $query = [
-            'match'=>[
-                "title" => $search,
-            ],
-        ];
 
         $params = [
-            'index' => 'elastic20211029191024',
-            'type' => 'text',
-            'body' => [
-                'query' => $query
+            'index' => 'elastic20211101161113',
+            'id' => '9',
+        ];
+
+        // $params = [
+        //     'index' => 'my_index1',
+        //     'id'    => 'my_id'
+        // ];
+
+        $params = [
+            'index' => 'elastic20211101161144',
+            'body'  => [
+                'query' => [
+                    // 'match' => [
+                    //     'title' => '測試111'
+                    // ]
+                    'multi_match' => [
+                        'query' => '測試',
+                        'fuzziness' => 'AUTO',
+                        'fields' => ['title', 'auther', 'content'],
+                    ],
+                ]
             ]
         ];
 
-        // dd($params);
-
         $client = $this->connElastic();
-        $response = $client->indices()->getMapping();
-        // $response = $this->searchElastic($client, $params);
-        // $params = ['type' => 'text'];
-        // $response = $client->indices()->getMapping($params);
-        dd($response);
+        $response = $this->searchElastic($client, $params);
+
+        $data = $response['hits']['hits'][0]['_source'];
+         dd($data);
+        
+        return $data;
     }
     
 }
