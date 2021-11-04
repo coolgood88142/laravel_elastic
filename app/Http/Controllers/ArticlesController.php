@@ -28,26 +28,23 @@ class ArticlesController extends Controller
         $this->elasticService = $elasticService;
     }
 
-    //文章列表-顯示所有文章、頻道
     public function showAritcles(Request $request)
     {   
-        $datetime = Carbon::now()->setTimezone('Asia/Taipei')->toDateTimeString();
-        $articles = Articles::orderBy('id')->get();
-    
-        $data = [
-            'articles' => $articles,
-            'datetime' => $datetime,
-        ];
+        $client = $this->elasticService->connElastic();
+        $params = ['type' => 'text'];
 
-        // dd($data);
+        $response = $client->indices()->getMapping($params);
 
-        return view('articles', $data);
+        dd($response);
+
+        return view('articles', $response);
     } 
 
     public function searchArticles()
     {
-        $search = '不被情緒綁架的日常';
-        $response = $this->elasticService->fuzzinSearch($search);
+        $id =  'elastic20211101161144';
+        $search = '測試';
+        $response = $this->elasticService->fuzzySearch($id, $search);
         dd($response);
     }
 
@@ -81,6 +78,55 @@ class ArticlesController extends Controller
                 ]
             ]
         ];
+    }
+
+    public function handle()
+    {
+        $host = config('scout.elasticsearch.hosts');
+        $index = config('scout.elasticsearch.index');
+        $client = ClientBuilder::create()->setHosts($host)->build();
+
+        if ($client->indices()->exists(['index' => $index])) {
+            $this->warn("Index {$index} exists, deleting...");
+            $client->indices()->delete(['index' => $index]);
+        }
+
+        $this->info("Creating index: {$index}");
+
+        return $client->indices()->create([
+            'index' => $index,
+            'body' => [
+                'settings' => [
+                    'number_of_shards' => 1,
+                    'number_of_replicas' => 0
+                ],
+                'mappings' => [
+                    '_source' => [
+                        'enabled' => true
+                    ],
+                    'properties' => [
+                        'id' => [
+                            'type' => 'long'
+                        ],
+                        'title' => [
+                            'type' => 'text',
+                            'analyzer' => 'ik_max_word',
+                            'search_analyzer' => 'ik_smart'
+                        ],
+                        'subtitle' => [
+                            'type' => 'text',
+                            'analyzer' => 'ik_max_word',
+                            'search_analyzer' => 'ik_smart'
+                        ],
+                        'content' => [
+                            'type' => 'text',
+                            'analyzer' => 'ik_max_word',
+                            'search_analyzer' => 'ik_smart'
+                        ]
+                    ],
+                ]
+            ]
+        ]);
     }
 
     //已閱讀通知 or 已閱讀全部

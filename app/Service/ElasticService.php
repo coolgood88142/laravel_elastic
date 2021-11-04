@@ -63,13 +63,13 @@ class ElasticService
         dd($response);
     }
 
-    public function fuzzinSearch($search)
+    public function fuzzySearch($index, $search)
     {
 
-        $params = [
-            'index' => 'elastic20211101161113',
-            'id' => '9',
-        ];
+        // $params = [
+        //     'index' => 'elastic20211101161113',
+        //     'id' => '9',
+        // ];
 
         // $params = [
         //     'index' => 'my_index1',
@@ -77,16 +77,16 @@ class ElasticService
         // ];
 
         $params = [
-            'index' => 'elastic20211101161144',
+            'index' => $index,
             'body'  => [
                 'query' => [
                     // 'match' => [
                     //     'title' => '測試111'
                     // ]
                     'multi_match' => [
-                        'query' => '測試',
+                        'query' => $search,
                         'fuzziness' => 'AUTO',
-                        'fields' => ['title', 'auther', 'content'],
+                        'fields' => ['title', 'auther', 'content', 'createDate'],
                     ],
                 ]
             ]
@@ -96,7 +96,6 @@ class ElasticService
         $response = $this->searchElastic($client, $params);
 
         $data = $response['hits']['hits'][0]['_source'];
-         dd($data);
         
         return $data;
     }

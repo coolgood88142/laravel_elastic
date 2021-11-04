@@ -9,7 +9,7 @@ return [
                      "analyzer"=>  "ik_max_word",
                      "search_analyzer"=>  "ik_smart"
                  ],
-                 "tags"=>  [
+                 "auther"=>  [
                      "type"=>  "text",
                      "analyzer"=>  "ik_max_word",
                      "search_analyzer"=>  "ik_smart"

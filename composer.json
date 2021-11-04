@@ -14,7 +14,7 @@
         "laravel/framework": "^6.20.26",
         "laravel/scout": "^9.3",
         "laravel/tinker": "^2.5",
-        "matchish/laravel-scout-elasticsearch": "^4.0"
+        "tamayo/laravel-scout-elastic": "^8.0"
     },
     "require-dev": {
         "facade/ignition": "^1.16.15",

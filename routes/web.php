@@ -19,6 +19,8 @@ Route::get('/add', function () {
     return view('add');
 });
 
+Route::get('/showArticles', 'ArticlesController@showAritcles');
+
 Route::post('/addArticles', 'ArticlesController@addArticles');
 
 Route::get('/testSearch', 'ArticlesController@searchArticles');
