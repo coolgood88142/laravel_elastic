@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Tools\Markdowner;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Scout\Searchable;
 
 class Articles extends Model
@@ -14,7 +16,7 @@ class Articles extends Model
 
     protected $fillable = [
         'title',
-        'auther',
+        'author',
         'content',
     ];
 
@@ -33,13 +35,19 @@ class Articles extends Model
         $this->attributes['content'] = json_encode($data);
     }
 
+    public function searchableAs()
+    {
+        return 'elastic';
+    }
+
     public function toSearchableArray()
     {
         $data = [
+            'id' => $this->id,
             'title' => $this->title,
             'author' => $this->author,
             'content' => $this->content,
-            'cearteDate' => $this->cearteDate
+            'createDate' => $this->create_date,
         ];
 
         return $data;

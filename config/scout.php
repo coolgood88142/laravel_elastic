@@ -17,6 +17,14 @@ return [
 
     'driver' => env('SCOUT_DRIVER', 'elasticsearch'),
 
+    'elasticsearch' => [
+        'index' => env('ELASTICSEARCH_INDEX', 'elastic'),
+        'hosts' => [
+            env('ELASTICSEARCH_HOST', 'http://localhost:9200'),
+        ],
+    
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Index Prefix

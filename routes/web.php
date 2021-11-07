@@ -19,10 +19,15 @@ Route::get('/add', function () {
     return view('add');
 });
 
-Route::get('/showArticles', 'ArticlesController@showAritcles');
+Route::get('/addIndex', 'ArticlesController@addIndex');
 
-Route::post('/addArticles', 'ArticlesController@addArticles');
+Route::get('/showArticles', 'ArticlesController@searchArticles');
+
+Route::post('/searchArticles', 'ArticlesController@searchArticles');
 
 Route::get('/testSearch', 'ArticlesController@searchArticles');
 
-Route::get('/testAdd', 'ArticlesController@addArticles');
+Route::get('/addArticles', 'ArticlesController@addArticles');
+
+Route::get('/testDelete', 'ArticlesController@deleteArticles');
+

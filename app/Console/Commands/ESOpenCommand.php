@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use App\Services\ElasticService;
 
 class ESOpenCommand extends Command
 {
@@ -37,6 +38,48 @@ class ESOpenCommand extends Command
      */
     public function handle()
     {
-        //
+        $host = config('scout.elasticsearch.hosts');
+        $index = config('scout.elasticsearch.index');
+        $elasticService = new ElasticService();
+        $client = $elasticService->connElastic();
+
+        if ($client->indices()->exists(['index' => $index])) {
+            $client->indices()->delete(['index' => $index]);
+        }
+
+        return $client->indices()->create([
+            'index' => $index,
+            'body' => [
+                'settings' => [
+                    'number_of_shards' => 1,
+                    'number_of_replicas' => 0
+                ],
+                'mappings' => [
+                    '_source' => [
+                        'enabled' => true
+                    ],
+                    'properties' => [
+                        'title' => [
+                            'type' => 'text',
+                            'analyzer' => 'ik_max_word',
+                            'search_analyzer' => 'ik_smart'
+                        ],
+                        'author' => [
+                            'type' => 'text',
+                            'analyzer' => 'ik_max_word',
+                            'search_analyzer' => 'ik_smart'
+                        ],
+                        'content' => [
+                            'type' => 'text',
+                            'analyzer' => 'ik_max_word',
+                            'search_analyzer' => 'ik_smart'
+                        ],
+                        'create_date' => [
+                            'type' => 'date'
+                        ],
+                    ],
+                ]
+            ]
+        ]);
     }
 }

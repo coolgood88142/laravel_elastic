@@ -10,6 +10,7 @@ use App\Models\Articles;
 use App\Models\Channels;
 use App\Models\Notifications;
 use App\Services\ElasticService;
+use App\Console\Commands\ElasearchCommand;
 use App\User;
 use App\Models\Author;
 use App\Models\Comment;
@@ -30,35 +31,28 @@ class ArticlesController extends Controller
 
     public function showAritcles(Request $request)
     {   
-        $client = $this->elasticService->connElastic();
-        $params = ['type' => 'text'];
-
-        $response = $client->indices()->getMapping($params);
-
-        dd($response);
-
-        return view('articles', $response);
+        $articles = Articles::all();
+        return view('articles', ['articles' => $articles, 'keyword' => '']);
     } 
 
-    public function searchArticles()
+    public function searchArticles(Request $request)
     {
-        $id =  'elastic20211101161144';
-        $search = '測試';
-        $response = $this->elasticService->fuzzySearch($id, $search);
-        dd($response);
+        $keyword = $request->keyword;
+        $articles = $this->elasticService->fuzzySearch($keyword);
+        return view('articles', ['articles' => $articles, 'keyword' => $keyword]);
     }
 
 
     //新增一篇文章
-    public function addArticles()
+    public function addArticles(Request $request)
     {
         $articles = new Articles();
         $articles->title = '測試111';
         $articles->author = '張三';
         $articles->create_date = '2021-11-01';
         $articles->content = '測試ElasticSearch測試ElasticSearch測試ElasticSearch測試ElasticSearch';
-        // $articles->save();
-        $id = 'el3';
+        $articles->save();
+        $id = $articles->id;
 
         $this->elasticService->addElastic($id, $articles->title, $articles->author, $articles->create_date, $articles->content);
         // $client = $this->elasticService->addElastic(2, 'Ming');
@@ -80,18 +74,26 @@ class ArticlesController extends Controller
         ];
     }
 
-    public function handle()
+    //刪除文章
+    public function deleteArticles()
+    {
+        $client = $this->elasticService->connElastic();
+        $params = [
+            'index' => '20211027151005',
+        ];
+
+        $this->elasticService->deleteElastic($client, $params);
+    }
+
+    public function addIndex()
     {
         $host = config('scout.elasticsearch.hosts');
         $index = config('scout.elasticsearch.index');
-        $client = ClientBuilder::create()->setHosts($host)->build();
+        $client = $this->elasticService->connElastic();
 
         if ($client->indices()->exists(['index' => $index])) {
-            $this->warn("Index {$index} exists, deleting...");
             $client->indices()->delete(['index' => $index]);
         }
-
-        $this->info("Creating index: {$index}");
 
         return $client->indices()->create([
             'index' => $index,
@@ -105,9 +107,6 @@ class ArticlesController extends Controller
                         'enabled' => true
                     ],
                     'properties' => [
-                        'id' => [
-                            'type' => 'long'
-                        ],
                         'title' => [
                             'type' => 'text',
                             'analyzer' => 'ik_max_word',
@@ -214,19 +213,6 @@ class ArticlesController extends Controller
         }catch(Exception $e){
             $status = 'error';
         }
-
-        return $status;
-    }
-
-    //刪除文章
-    public function deleteArticles(Request $request)
-    {
-        $id = $request->id;
-
-
-        $articles = Articles::where('id', '=', $id)->first();
-        $articles->delete();
-
 
         return $status;
     }

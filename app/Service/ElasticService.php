@@ -39,31 +39,29 @@ class ElasticService
 
     public function addElastic($id, $title, $auther, $createDate, $context)
     {
-        // $params =[
-        //     'index' => 'elastic' . date('YmdHms'),
-        //     'type' => 'data',
-        //     'id' => $id
-        // ];
-    
-        // $params['body'] = [
-        //     'title' => $title,
-        //     'auther' => $auther,
-        //     'createDate' => $createDate,
-        // 	'context' => $context
-        // ];
-
-        $params = [
-            'index' => 'my_index1',
-            'id'    => 'my_id',
-            'body'  => ['testField' => 'abc']
+        $params =[
+            'index' => 'elastic' . date('YmdHms'),
+            'id' => $id
         ];
+    
+        $params['body'] = [
+            'title' => $title,
+            'auther' => $auther,
+            'createDate' => $createDate,
+        	'context' => $context
+        ];
+
+        // $params = [
+        //     'index' => 'my_index1',
+        //     'id'    => 'my_id',
+        //     'body'  => ['testField' => 'abc']
+        // ];
         
         $client = $this->connElastic();
         $response = $this->createElastic($client, $params);
-        dd($response);
     }
 
-    public function fuzzySearch($index, $search)
+    public function fuzzySearch($search)
     {
 
         // $params = [
@@ -76,9 +74,16 @@ class ElasticService
         //     'id'    => 'my_id'
         // ];
 
-        $params = [
-            'index' => $index,
-            'body'  => [
+        $params = ['index' => config('scout.elasticsearch.index')];
+
+        if($search != '' && $search != null){
+
+            $params['body'] = [
+                'sort' => [
+                    'createDate' => [
+                        "order" => "desc"
+                    ]
+                ],
                 'query' => [
                     // 'match' => [
                     //     'title' => '測試111'
@@ -86,16 +91,17 @@ class ElasticService
                     'multi_match' => [
                         'query' => $search,
                         'fuzziness' => 'AUTO',
-                        'fields' => ['title', 'auther', 'content', 'createDate'],
+                        'fields' => ['title', 'author', 'content'],
                     ],
                 ]
-            ]
-        ];
+            ];
+        }
+
+        
 
         $client = $this->connElastic();
         $response = $this->searchElastic($client, $params);
-
-        $data = $response['hits']['hits'][0]['_source'];
+        $data = $response['hits']['hits'];
         
         return $data;
     }
