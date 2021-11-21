@@ -31,3 +31,5 @@ Route::get('/addArticles', 'ArticlesController@addArticles');
 
 Route::get('/testDelete', 'ArticlesController@deleteArticles');
 
+Route::get('/import', 'ArticlesController@importArticles');
+

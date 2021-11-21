@@ -19,6 +19,7 @@ return [
 
     'elasticsearch' => [
         'index' => env('ELASTICSEARCH_INDEX', 'elastic'),
+        'type' => '_doc',
         'hosts' => [
             env('ELASTICSEARCH_HOST', 'http://localhost:9200'),
         ],

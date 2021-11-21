@@ -12,32 +12,16 @@ class Articles extends Model
     use Searchable;
     protected  $table = 'articles';
 
-    protected $dates = ['cearteDate'];
-
     protected $fillable = [
         'title',
         'author',
+        'create_date',
         'content',
     ];
 
-    /**
-     * Set the content attribute.
-     *
-     * @param $value
-     */
-    public function setContentAttribute($value)
-    {
-        $data = [
-            'raw'  => $value,
-            'html' => (new Markdowner)->convertMarkdownToHtml($value)
-        ];
-
-        $this->attributes['content'] = json_encode($data);
-    }
-
     public function searchableAs()
     {
-        return 'elastic';
+      return 'elastic';
     }
 
     public function toSearchableArray()

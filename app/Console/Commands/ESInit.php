@@ -3,6 +3,7 @@ namespace App\Console\Commands;
 
 use App\Services\ElasticService;
 use Illuminate\Console\Command;
+use GuzzleHttp\Client;
 
 class ESInit extends Command {
 
@@ -14,9 +15,9 @@ class ESInit extends Command {
 
     public function handle() {
 
-        $client = $this->elasticService->connElastic();
+        $client = new Client();
 
-        $url = config('scout.elasticsearch.hosts')[0] . '/_template/news';
+        $url = config('scout.elasticsearch.hosts')[0] . ':9200' . '/_template/news';
 
         $params = [
             'json' => [
@@ -26,6 +27,9 @@ class ESInit extends Command {
                 ],
                 'mappings' => [
                     '_default_' => [
+                        '_all' => [
+                            'enabled' => true
+                        ],
                         'dynamic_templates' => [
                             [
                                 'strings' => [
@@ -51,7 +55,7 @@ class ESInit extends Command {
         $client->put($url, $params);
 
         // 创建index
-        $url = config('scout.elasticsearch.hosts')[0] . '/' . config('scout.elasticsearch.index');
+        $url = config('scout.elasticsearch.hosts')[0] . ':9200' . '/' . config('scout.elasticsearch.index');
 
         $params = [
             'json' => [

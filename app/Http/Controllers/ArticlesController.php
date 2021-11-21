@@ -7,8 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\LazyCollection;
 use App\Models\Articles;
-use App\Models\Channels;
-use App\Models\Notifications;
+use App\Imports\ArticlesImport;
 use App\Services\ElasticService;
 use App\Console\Commands\ElasearchCommand;
 use App\User;
@@ -17,6 +16,7 @@ use App\Models\Comment;
 use Carbon\Carbon;
 use Pusher\Pusher;
 use Auth;
+use Excel;
 
 class ArticlesController extends Controller
 {
@@ -47,14 +47,17 @@ class ArticlesController extends Controller
     public function addArticles(Request $request)
     {
         $articles = new Articles();
-        $articles->title = '測試111';
-        $articles->author = '張三';
-        $articles->create_date = '2021-11-01';
-        $articles->content = '測試ElasticSearch測試ElasticSearch測試ElasticSearch測試ElasticSearch';
-        $articles->save();
-        $id = $articles->id;
+        $id = 5;
+        $data = $articles->where('id', '=', $id)->first();
 
-        $this->elasticService->addElastic($id, $articles->title, $articles->author, $articles->create_date, $articles->content);
+        // $articles->title = '測試111';
+        // $articles->author = '張三';
+        // $articles->create_date = '2021-11-01';
+        // $articles->content = '測試ElasticSearch測試ElasticSearch測試ElasticSearch測試ElasticSearch';
+        // $articles->save();
+        // $id = $articles->id;
+
+        $this->elasticService->addElastic($id, $data->title, $data->author, $data->create_date, $data->content);
         // $client = $this->elasticService->addElastic(2, 'Ming');
 		print_r('已建立成功!');
 
@@ -79,7 +82,8 @@ class ArticlesController extends Controller
     {
         $client = $this->elasticService->connElastic();
         $params = [
-            'index' => '20211027151005',
+            'index' => 'elastic',
+            'id' => 24
         ];
 
         $this->elasticService->deleteElastic($client, $params);
@@ -87,16 +91,26 @@ class ArticlesController extends Controller
 
     public function addIndex()
     {
+        //取得config/scout.php的elasticsearch hosts的資料
         $host = config('scout.elasticsearch.hosts');
+
+        //取得config/scout.php的elasticsearch index的資料
         $index = config('scout.elasticsearch.index');
+
+        //建立elasticsearch物件
         $client = $this->elasticService->connElastic();
 
+        //判斷elasticsearch物件中有沒有index，有的話重新建立
         if ($client->indices()->exists(['index' => $index])) {
             $client->indices()->delete(['index' => $index]);
         }
 
+        //建立elasticsearch索引值
         return $client->indices()->create([
+            //設定索引值
             'index' => $index,
+
+            //設定索引值存放內容
             'body' => [
                 'settings' => [
                     'number_of_shards' => 1,
@@ -127,95 +141,6 @@ class ArticlesController extends Controller
             ]
         ]);
     }
-
-    //已閱讀通知 or 已閱讀全部
-    public function readArticles(Request $request)
-    {
-        $id = $request->id;
-        $userId = $request->userId;
-        $status = 'success';
-        try{
-            if($id != ''){
-                //已閱讀通知
-                $this->readNotifications($id, $userId);
-            }else{
-                //已閱讀全部
-                $this->readNotificationsAll($userId);
-            }
-            
-        }catch(Exception $e){
-            $status = 'error';
-        }
-        return $status;
-    }
-
-    //已閱讀通知
-    public function readNotifications($id, $userId){
-        // $userId =  $request->userId;
-        // $id =  $request->id;
-        $user = User::where('id', '=', $userId)->first();
-        $data = $user->unreadNotifications->where('id', '=', $id)->first()->markAsRead();
-    }
-
-    //已閱讀全部
-    public function readNotificationsAll($userId){
-        // $userId =  $request->userId;
-        $user = User::where('id', '=', $userId)->first();
-        $data = $user->unreadNotifications->markAsRead();
-    }
-
-    //顯示單篇文章內容
-    public function showArticleContent(Request $request)
-    {
-        $id = $request->id;
-        $userId = $request->userId;
-        $notificationId = $request->notificationId;
-        $isAdd = $request->isAdd;
-        $articles = Articles::where('id', '=', $id)->first();
-        $user = User::where('id', '=', $articles->author_id)->first();
-        $comment =  DB::table('users')
-            ->select('users.name', 'comment.text')
-            ->join('comment', 'users.id', '=', 'comment.user_id')
-            ->where([
-                ['articles_id', '=', $id]
-            ])
-            ->get();
-
-        // if($notificationId != null && $userId != null && $isRead == 'N'){
-        //     //點選後直接做已閱讀
-        //     $this->readNotifications($notificationId, $userId);
-        // }
-        
-
-        return view('edit', [
-            'articleId' => $id,
-            'title' => $articles->title,
-            'content' => $articles->content,
-            'onlineDate' => $articles->online_date,
-            'sendNotice' => $articles->send_notice,
-            'userId' => $userId,
-            'userName' => $user->name,
-            'comment' => $comment,
-            'isAdd' => $isAdd
-        ]);
-    }
-
-    //儲存文章
-    public function saveArticles(Request $request)
-    {
-        $id = $request->id;
-        $status = 'success';
-        try{
-            $articles = Articles::where('id', '=', $id)->first();
-            $articles->title = $request->title;
-            $articles->content = $request->content;
-            $articles->save();
-        }catch(Exception $e){
-            $status = 'error';
-        }
-
-        return $status;
-    }
     
     //顯示新增文章畫面
     public function showAdd(Request $request)
@@ -223,5 +148,11 @@ class ArticlesController extends Controller
         return view('add');
     }
 
+    public function importArticles()
+    {
+        Excel::import(new ArticlesImport, storage_path('articles.xls'));
 
+
+        return redirect('/showArticles');
+    }
 }

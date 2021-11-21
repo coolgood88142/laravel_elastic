@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\ElasticService;
 
-class ESOpenCommand extends Command
+class InitEs extends Command
 {
     /**
      * The name and signature of the console command.
@@ -38,6 +38,10 @@ class ESOpenCommand extends Command
      */
     public function handle()
     {
+        $client = new Client();
+        $this->createTemplate($client);
+        $this->createIndex($client);
+        
         $host = config('scout.elasticsearch.hosts');
         $index = config('scout.elasticsearch.index');
         $elasticService = new ElasticService();
@@ -47,7 +51,7 @@ class ESOpenCommand extends Command
             $client->indices()->delete(['index' => $index]);
         }
 
-        $client->indices()->create([
+        return $client->indices()->create([
             'index' => $index,
             'body' => [
                 'settings' => [
@@ -55,14 +59,6 @@ class ESOpenCommand extends Command
                     'number_of_replicas' => 0
                 ],
                 'mappings' => [
-                    // 'index' => $index,
-                    // 'type'  => 'articles',
-                    // 'body'  => [
-                    //     "_all" => [
-                    //         "enabled"  => true,
-                    //         "analyzer" => "synonym_filter"
-                    //     ]
-                    // ]
                     '_source' => [
                         'enabled' => true
                     ],
@@ -92,7 +88,5 @@ class ESOpenCommand extends Command
                 ]
             ]
         ]);
-
-        // $this->call('scout:import', ['model' => 'App\Models\Articles']);
     }
 }
