@@ -47,7 +47,7 @@ class ArticlesController extends Controller
     public function addArticles(Request $request)
     {
         $articles = new Articles();
-        $id = 5;
+        $id = 7;
         $data = $articles->where('id', '=', $id)->first();
 
         // $articles->title = '測試111';

@@ -66,96 +66,101 @@ class ElasticService
         
         $params['body'] = [
             'name'=> [
-                "type"=> "text"
+                "type"=> "text",
+                "value"=>"王小明"
             ],
             "blob"=> [
-                "type"=> "binary"
+                "type"=> "binary",
+                "value"=> "test1234"
             ],
             "is_published"=> [
-                "type"=> "boolean"
+                "type"=> "boolean",
+                "value"=>true
             ],
             "tags"=> [
-                "type"=>  "keyword"
+                "type"=>  "keyword",
+                "value"=> "articles"
             ],
-            "number_of_bytes"=> [
-                "type"=> "integer"
-            ],
-            "time_in_seconds"=> [
-                "type"=> "float"
-            ],
-            "price"=> [
-                "type"=> "scaled_float",
-                "scaling_factor"=> 100
-            ],
+            
             "create_date"=> [
-                "type"=> "date"
+                "type"=> "date",
+                "value"=> '2021-11-23'
             ],
             "distance"=> [
-                "type"=> "long"
-            ],
-            "route_length_miles"=> [
-                "type"=> "alias",
-                "path"=> "distance" 
+                "type"=> "long",
+                "value" => 123345567789
             ],
             "title"=> [
-                "type"=> "text"
+                "type"=> "text",
+                "value"=> "標題"
             ],
             "labels"=> [
-                "type"=> "flattened"
+                "type"=> "flattened",
+                "value"=> "testFlattened" 
             ],
             "user"=> [
-                "type"=> "nested" 
+                "type"=> "nested",
+                "value"=> "testNested"  
             ],
             "my_join_field"=> [ 
                 "type"=> "join",
                 "relations"=> [
-                "question"=> "answer" 
+                    "value"=> "answer" 
                 ]
             ],
             "expected_attendees"=> [
-                "type"=> "integer_range"
+                "type"=> "integer_range",
+                "value"=> "testRange" 
             ],
             "ip_addr"=> [
-                "type"=> "ip"
+                "type"=> "ip",
+                "value"=> "127.0.0.1" 
             ],
             "my_version"=> [
-                "type"=> "version"
+                "type"=> "version",
+                "value"=> "testVersion"
             ],
             "my-agg-metric-field"=> [
                 "type"=> "aggregate_metric_double",
                 "metrics"=> [ "min", "max", "sum", "value_count" ],
-                "default_metric"=> "max"
+                "default_metric"=> "max",
+                "value"=> "testAggregateMetricDouble"
             ],
             "my_histogram" => [
-                "type" => "histogram"
+                "type" => "histogram",
+                "value"=> "testHistogram"
             ],
             "my_dense_vector"=> [
                 "type"=> "dense_vector",
-                "dims"=> 3  
+                "dims"=> 3,
+                "value"=> "testDenseVector"  
             ],
             "my_sparse_vector"=> [
-                "type"=> "sparse_vector"
+                "type"=> "sparse_vector",
+                "value"=> "testSparseVector"  
             ],
             "pagerank"=> [
-                "type"=> "rank_feature" 
-            ],
-            "topics"=> [
-                "type"=> "rank_features" 
+                "type"=> "rank_feature",
+                "value"=> "testRankFeature"  
             ],
             "location1"=> [
-                "type"=> "geo_point"
+                "type"=> "geo_point",
+                "value"=> 41.12
             ],
             "longitude1"=> [
-                "type"=> "geo_shape"
+                "type"=> "geo_shape",
+                "value"=> -71.34  
             ],
             "location2"=> [
-                "type"=> "point"
+                "type"=> "point",
+                "value"=> [
+                    'x' => 41.12,
+                    'y' => -71.34
+                ] 
             ],
             "longitude2"=> [
-                "type"=> "shape"
-            ],
-            "query"=> [
-                "type"=> "percolator"
+                "type"=> "shape",
+                "value" => [-377.03653, 389.897676]
             ]
         ];
 
